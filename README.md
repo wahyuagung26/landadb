@@ -1,0 +1,2 @@
+# landadb
+mysq pdo core
