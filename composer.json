@@ -1,0 +1,19 @@
+{
+    "name": "cahkampung/landa-db",
+    "description": "Mysql database library",
+    "keywords": ["template", "composer", "package"],
+    "license": "DBAD",
+    "authors": [{
+        "name": "Wahyu Agung Tribawono",
+        "email": "wahyuagung26@gmail.com"
+    }],
+    "type": "project",
+    "require": {
+        "php": ">=5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cahkampung\\LandaDb\\": "src/"
+        }
+    }
+}
