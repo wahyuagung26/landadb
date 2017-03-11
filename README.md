@@ -1,2 +1,2 @@
 # landadb
-mysq pdo core
+mysql pdo core

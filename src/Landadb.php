@@ -1,7 +1,7 @@
 <?php
-namespace Cahkampung\LandaDb;
+namespace Cahkampung;
 
-class LandaDb
+class Landadb extends \PDO
 {
     /**
      * @var $db
@@ -63,9 +63,7 @@ class LandaDb
      */
     public function __construct($db_setting)
     {
-        $this->db = new PDO("mysql:host=" . $db_setting['DB_HOST'] . ";dbname=" . $db_setting['DB_NAME'], $db_setting['DB_USER'], $db_setting['DB_PASS']);
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $this->db;
+        @parent::__construct("mysql:host=" . $db_setting['DB_HOST'] . ";dbname=" . $db_setting['DB_NAME'], $db_setting['DB_USER'], $db_setting['DB_PASS']);
     }
 
     /**
@@ -76,7 +74,7 @@ class LandaDb
     {
         $created = array();
         if (isset($db_setting['CREATED_USER'])) {
-            $created[$db_setting['CREATED_USER']] = isset($_SESSION['user']['id']) ? $_SESSION['user']['id'] : 0;
+            $created[$db_setting['CREATED_USER']] = isset($db_setting['USER_ID']) ? $db_setting['USER_ID'] : 0;
         }
 
         if (isset($db_setting['CREATED_TIME'])) {
@@ -94,7 +92,7 @@ class LandaDb
     {
         $created = array();
         if (isset($db_setting['MODIFIED_USER']) != null) {
-            $created[$db_setting['MODIFIED_USER']] = isset($_SESSION['user']['id']) ? $_SESSION['user']['id'] : 0;
+            $created[$db_setting['MODIFIED_USER']] = isset($db_setting['USER_ID']) ? $db_setting['USER_ID'] : 0;
         }
 
         if (isset($db_setting['MODIFIED_TIME']) != null) {
@@ -111,7 +109,7 @@ class LandaDb
      */
     public function escape($data)
     {
-        return $this->db->quote(trim($data));
+        return $this->quote(trim($data));
     }
 
     /**
@@ -126,6 +124,7 @@ class LandaDb
         $this->limit        = null;
         $this->offset       = null;
         $this->orderBy      = null;
+        $this->groupBy      = null;
         $this->where_clause = null;
         $this->table        = null;
     }
@@ -140,11 +139,11 @@ class LandaDb
     {
         $query = trim($query);
         try {
-            $result = $this->db->prepare($query);
+            $result = $this->prepare($query);
             $result->execute($bind);
             return $result;
         } catch (PDOException $e) {
-            echo $e->getMessage();
+            return $e->getMessage();
             exit(1);
         }
     }
@@ -157,31 +156,13 @@ class LandaDb
      */
     public function field_filter($table, $data)
     {
-        $stmt         = $this->db->query("DESCRIBE $table");
-        $list         = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $stmt         = $this->query("DESCRIBE $table");
+        $list         = $stmt->fetchAll($this::FETCH_OBJ);
         $table_fields = array();
         foreach ($list as $val) {
             $table_fields[] = $val->Field;
         }
         return array_values(array_intersect($table_fields, array_keys($data)));
-    }
-
-    /**
-     * get_data
-     * @param  string $table
-     * @param  int $id
-     * @return array
-     */
-    public function get_data($table, $id)
-    {
-        $sql = "select * from $table where id = $id";
-        try {
-            $exec = $this->db->query($sql);
-            $r    = $exec->fetch(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            $r = $e->getMessage();
-        }
-        return $r;
     }
 
     /**
@@ -217,8 +198,8 @@ class LandaDb
 
         try {
             $this->run($sql, $bind);
-            $lastId = $this->db->lastInsertId();
-            $r      = $this->get_data($table, $lastId);
+            $lastId = $this->lastInsertId();
+            $r      = $this->find("select * from $table where id = $lastId");
         } catch (Exception $e) {
             $r = $e->getMessage();
         }
@@ -258,7 +239,14 @@ class LandaDb
                 if (empty($param)) {
                     $param .= " where $k = :where_$k";
                 } else {
-                    $param .= " and $k =  :wher e_$k";
+                    $this->select("*")
+                        ->from($table);
+
+                    foreach ($where as $k => $vals) {
+                        $this->andWhere('=', $k, $vals);
+                    }
+
+                    $r = $this->find();
                 }
 
                 $bind[":where_$k"] = $vals;
@@ -290,23 +278,23 @@ class LandaDb
      * @param  array  $where
      * @return array
      */
-    public function delete($table, $where = array())
+    public function delete($table, $where)
     {
         /** Set param */
-        // if (is_array($where)) {
-        $param = '';
-        foreach ($where as $k => $vals) {
-            if (empty($param)) {
-                $param .= " WHERE $k = :where_$k";
-            } else {
-                $param .= " AND $k = :where_$k";
-            }
+        if (is_array($where)) {
+            $param = '';
+            foreach ($where as $k => $vals) {
+                if (empty($param)) {
+                    $param .= " WHERE $k = :where_$k";
+                } else {
+                    $param .= " AND $k = :where_$k";
+                }
 
-            $bind[":where_$k"] = $vals;
+                $bind[":where_$k"] = $vals;
+            }
+        } else {
+            $param = $where;
         }
-        // } else {
-        //     $param = $where;
-        // }
 
         $sql = "DELETE FROM " . $table . " $param ";
 
@@ -430,7 +418,7 @@ class LandaDb
      * @param  string $nParam
      * @return array
      */
-    public function where($filter, $column, $value, $nParam = 'AND')
+    public function where($column, $filter, $value, $nParam = 'AND')
     {
         if (is_array($value)) {
             $_keys = [];
@@ -551,7 +539,7 @@ class LandaDb
 
         try {
             $exec  = $this->run(trim($sql), $this->bind_param);
-            $count = $exec->fetch(PDO::FETCH_OBJ);
+            $count = $exec->fetch($this::FETCH_OBJ);
             return $count->jumlah;
         } catch (Exception $e) {
             $e->getMessage();
@@ -622,7 +610,7 @@ class LandaDb
 
         try {
             $exec = $this->run(trim($query['query']), $query['bind']);
-            return $exec->fetch(PDO::FETCH_OBJ);
+            return $exec->fetch($this::FETCH_OBJ);
         } catch (Exception $e) {
             $e->getMessage();
         }
@@ -644,7 +632,7 @@ class LandaDb
 
         try {
             $exec = $this->run(trim($query['query']), $query['bind']);
-            return $exec->fetchAll(PDO::FETCH_OBJ);
+            return $exec->fetchAll($this::FETCH_OBJ);
         } catch (Exception $e) {
             $e->getMessage();
         }
@@ -703,12 +691,6 @@ class LandaDb
             $query['bind']  = array();
         }
 
-        if ($return == false) {
-            echo "<div class='well'>";
-            echo $this->sql_debug($query['query'], $query['bind']);
-            echo "</div>";
-        } else {
-            return $this->sql_debug($query['query'], $query['bind']);
-        }
+        return $this->sql_debug($query['query'], $query['bind']);
     }
 }
