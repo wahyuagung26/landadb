@@ -1,6 +1,13 @@
 <?php
 namespace Cahkampung;
 
+/** 
+ * Mysql PDO Library
+ * author : Wahyu Agun Tribawono
+ * email : wahyuagun26@gmail.com
+ * versi : 1.0
+ */
+
 class Landadb extends \PDO
 {
     /**

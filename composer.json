@@ -1,6 +1,6 @@
 {
     "name": "cahkampung/landa-db",
-    "description": "Mysql database library",
+    "description": "Mysql POD library",
     "keywords": ["pdo", "database", "slim", "framework"],
     "license": "DBAD",
     "authors": [{
