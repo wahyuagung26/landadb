@@ -123,7 +123,7 @@ Same as `AND (name="john" or nationallity="indonesia");`
 
 #### findAll() ####
 
-Fetch all result results from query
+Fetch all result from query
 
 Example :
 ```
