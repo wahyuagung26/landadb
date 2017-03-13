@@ -1,6 +1,6 @@
 # Landa DB
 
-Mysql PDO CRUD library from Cahkampung
+Simple Mysql PDO CRUD library
 
 ## Installation
 
