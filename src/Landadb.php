@@ -1,7 +1,7 @@
 <?php
 namespace Cahkampung;
 
-/** 
+/**
  * Mysql PDO Library
  * author : Wahyu Agun Tribawono
  * email : wahyuagun26@gmail.com
@@ -267,7 +267,7 @@ class Landadb extends \PDO
             $this->run($sql, $bind);
 
             if (isset($data['id'])) {
-                $r = $this->get_data($table, $data['id']);
+                $r = $this->find("select * from $table where id = '" . $data['id'] . "'");
             } else {
                 $r = $data;
             }
@@ -368,8 +368,7 @@ class Landadb extends \PDO
      * @param  string $clause
      * @return array
      */
-    public function innerJoin($table, $clause)
-    {
+    function ($table, $clause) {
         $this->join('INNER JOIN', $table, $clause);
     }
 
