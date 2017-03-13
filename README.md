@@ -25,7 +25,7 @@ $data = [
   'email' => 'john@example.com'
 ];
 
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->insert('user_table', $data);
 ```
 
@@ -40,7 +40,7 @@ $data = [
   'email' => 'john@example.com'
 ];
 
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->update('user_table', $data, ['id' => 1]);
 ```
 ### Delete
@@ -49,7 +49,7 @@ $db->update('user_table', $data, ['id' => 1]);
 
 Example :
 ```
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->delete('user_table', ['id' => 1]);
 ```
 
@@ -59,7 +59,7 @@ $db->delete('user_table', ['id' => 1]);
 
 `select(FIELDS)`
 
-*FIELDS* can be array format, default value is `*`
+**FIELDS** can be array format, default value is `*`
 
 #### from() ####
 
@@ -87,7 +87,7 @@ Example :
 
 `customWhere('name = "john" or nationallity = "indonesia"', 'AND');`
 
-Same as `AND (name="john" or nationallity="indonesia");`
+Will generate `AND (name="john" or nationallity="indonesia");`
 
 #### join() ####
 
@@ -127,12 +127,12 @@ Fetch all result from query
 
 Example :
 ```
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->findAll('select * from user_table where name like "%john%" order by name ASC limit 10 offset 0');
 ```
 Or
 ```
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->select()
     ->from('user_table')
     ->where('name','LIKE','john')
@@ -148,12 +148,12 @@ Fetch 1 results from query
 
 Example :
 ```
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->find('select * from user_table where name like "%john%" order by name ASC');
 ```
 Or 
 ```
-$db = new Cahkampung\LandaDB;
+$db = new Cahkampung\Landadb;
 $db->select()
     ->from('user_table')
     ->where('name','LIKE','john')
