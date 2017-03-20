@@ -3,7 +3,7 @@ namespace Cahkampung;
 
 /**
  * Mysql PDO Library
- * author : Wahyu Agun Tribawono
+ * author : Wahyu Agung Tribawono
  * email : wahyuagun26@gmail.com
  * versi : 1.0
  */
@@ -70,7 +70,9 @@ class Landadb extends \PDO
      */
     public function __construct($db_setting)
     {
-        @parent::__construct("mysql:host=" . $db_setting['DB_HOST'] . ";dbname=" . $db_setting['DB_NAME'], $db_setting['DB_USER'], $db_setting['DB_PASS']);
+        $this->db_setting = $db_setting;
+
+        @parent::__construct("mysql:host=" . $this->db_setting['DB_HOST'] . ";dbname=" . $this->db_setting['DB_NAME'], $this->db_setting['DB_USER'], $this->db_setting['DB_PASS']);
     }
 
     /**
@@ -80,12 +82,12 @@ class Landadb extends \PDO
     public function created()
     {
         $created = array();
-        if (isset($db_setting['CREATED_USER'])) {
-            $created[$db_setting['CREATED_USER']] = isset($db_setting['USER_ID']) ? $db_setting['USER_ID'] : 0;
+        if (isset($this->db_setting['CREATED_USER'])) {
+            $created[$this->db_setting['CREATED_USER']] = isset($this->db_setting['USER_ID']) ? $this->db_setting['USER_ID'] : 0;
         }
 
-        if (isset($db_setting['CREATED_TIME'])) {
-            $created[$db_setting['CREATED_TIME']] = ($db_setting['CREATED_TIME'] !== null && $db_setting['CREATED_TIME'] == "date") ? date("Y-m-d H:i:s") : strtotime(date("Y-m-d H:i:s"));
+        if (isset($this->db_setting['CREATED_TIME'])) {
+            $created[$this->db_setting['CREATED_TIME']] = ($this->db_setting['CREATED_TIME'] !== null && $this->db_setting['CREATED_TIME'] == "date") ? date("Y-m-d H:i:s") : strtotime(date("Y-m-d H:i:s"));
         }
 
         return $created;
@@ -98,12 +100,12 @@ class Landadb extends \PDO
     public function modified()
     {
         $created = array();
-        if (isset($db_setting['MODIFIED_USER']) != null) {
-            $created[$db_setting['MODIFIED_USER']] = isset($db_setting['USER_ID']) ? $db_setting['USER_ID'] : 0;
+        if (isset($this->db_setting['MODIFIED_USER']) != null) {
+            $created[$this->db_setting['MODIFIED_USER']] = isset($this->db_setting['USER_ID']) ? $this->db_setting['USER_ID'] : 0;
         }
 
-        if (isset($db_setting['MODIFIED_TIME']) != null) {
-            $created[$db_setting['MODIFIED_TIME']] = ($db_setting['MODIFIED_TYPE'] !== null && $db_setting['MODIFIED_TYPE'] == "date") ? date("Y-m-d H:i:s") : strtotime(date("Y-m-d H:i:s"));
+        if (isset($this->db_setting['MODIFIED_TIME']) != null) {
+            $created[$this->db_setting['MODIFIED_TIME']] = ($this->db_setting['MODIFIED_TYPE'] !== null && $this->db_setting['MODIFIED_TYPE'] == "date") ? date("Y-m-d H:i:s") : strtotime(date("Y-m-d H:i:s"));
         }
 
         return $created;
@@ -368,8 +370,10 @@ class Landadb extends \PDO
      * @param  string $clause
      * @return array
      */
-    function ($table, $clause) {
+    public function innerJoin($table, $clause)
+    {
         $this->join('INNER JOIN', $table, $clause);
+        return $this;
     }
 
     /**
@@ -381,6 +385,7 @@ class Landadb extends \PDO
     public function leftJoin($table, $clause)
     {
         $this->join('LEFT JOIN', $table, $clause);
+        return $this;
     }
 
     /**
@@ -392,6 +397,7 @@ class Landadb extends \PDO
     public function rightJoin($table, $clause)
     {
         $this->join('RIGHT JOIN', $table, $clause);
+        return $this;
     }
 
     /**
@@ -546,7 +552,7 @@ class Landadb extends \PDO
         try {
             $exec  = $this->run(trim($sql), $this->bind_param);
             $count = $exec->fetch($this::FETCH_OBJ);
-            return $count->jumlah;
+            return isset($count->jumlah) ? $count->jumlah : 0;
         } catch (Exception $e) {
             $e->getMessage();
         }
