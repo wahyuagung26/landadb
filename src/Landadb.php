@@ -248,20 +248,13 @@ class Landadb extends \PDO
                 if (empty($param)) {
                     $param .= " where $k = :where_$k";
                 } else {
-                    $this->select("*")
-                        ->from($table);
-
-                    foreach ($where as $k => $vals) {
-                        $this->andWhere('=', $k, $vals);
-                    }
-
-                    $r = $this->find();
+                    $param .= " and $k =  :where_$k";
                 }
 
                 $bind[":where_$k"] = $vals;
             }
         } else {
-            $param = $where;
+            $param = ' where ' . $where;
         }
 
         try {
@@ -271,7 +264,17 @@ class Landadb extends \PDO
             if (isset($data['id'])) {
                 $r = $this->find("select * from $table where id = '" . $data['id'] . "'");
             } else {
-                $r = $data;
+                if (is_array($where)) {
+                    $this->select("*")
+                        ->from($table);
+
+                    foreach ($where as $k => $vals) {
+                        $this->andWhere($k, '=', $vals);
+                    }
+                    $r = $this->find();
+                } else {
+                    $r = $this->find("select * from $table $param");
+                }
             }
 
         } catch (Exception $e) {
@@ -703,6 +706,12 @@ class Landadb extends \PDO
             $query['bind']  = array();
         }
 
-        return $this->sql_debug($query['query'], $query['bind']);
+        if ($return == false) {
+            echo "<div class='well'>";
+            echo $this->sql_debug($query['query'], $query['bind']);
+            echo "</div>";
+        } else {
+            return $this->sql_debug($query['query'], $query['bind']);
+        }
     }
 }
