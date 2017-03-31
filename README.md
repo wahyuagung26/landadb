@@ -17,7 +17,7 @@ Run `composer install`
 ### Connection
 
 ```
-$db = [
+$config = [
   'DB_HOST'        => 'localhost',
   'DB_USER'        => 'root',
   'DB_PASS'        => 'password',
@@ -31,6 +31,8 @@ $db = [
   'DISPLAY_ERRORS' => false,
   'USER_ID'        => $_SESSION['user']['id'],
 ];
+
+$db = new Cahkampung\Landadb($config);
 ```
 
 ### Insert
