@@ -5,7 +5,7 @@ namespace Cahkampung;
  * Mysql PDO Library
  * author : Wahyu Agung Tribawono
  * email : wahyuagun26@gmail.com
- * versi : 1.0
+ * versi : 1.1
  */
 
 class Landadb extends \PDO
@@ -72,7 +72,16 @@ class Landadb extends \PDO
     {
         $this->db_setting = $db_setting;
 
-        @parent::__construct("mysql:host=" . $this->db_setting['DB_HOST'] . ";dbname=" . $this->db_setting['DB_NAME'], $this->db_setting['DB_USER'], $this->db_setting['DB_PASS']);
+        if (isset($this->db_setting['DISPLAY_ERRORS']) && $this->db_setting['DISPLAY_ERRORS'] == 'true') {
+            $arr = array(
+                \PDO::ATTR_ERRMODE          => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+            );
+        } else {
+            $arr = array();
+        }
+
+        @parent::__construct("mysql:host=" . $this->db_setting['DB_HOST'] . ";dbname=" . $this->db_setting['DB_NAME'], $this->db_setting['DB_USER'], $this->db_setting['DB_PASS'], $arr);
     }
 
     /**
@@ -150,11 +159,12 @@ class Landadb extends \PDO
         try {
             $result = $this->prepare($query);
             $result->execute($bind);
+
             return $result;
         } catch (PDOException $e) {
-            return $e->getMessage();
-            exit(1);
+            echo $e->getMessage();
         }
+
     }
 
     /**
@@ -171,6 +181,7 @@ class Landadb extends \PDO
         foreach ($list as $val) {
             $table_fields[] = $val->Field;
         }
+
         return array_values(array_intersect($table_fields, array_keys($data)));
     }
 
@@ -205,15 +216,9 @@ class Landadb extends \PDO
             $bind[":$field"] = $data[$field];
         }
 
-        try {
-            $this->run($sql, $bind);
-            $lastId = $this->lastInsertId();
-            $r      = $this->find("select * from $table where id = $lastId");
-        } catch (Exception $e) {
-            $r = $e->getMessage();
-        }
-
-        return $r;
+        $this->run($sql, $bind);
+        $lastId = $this->lastInsertId();
+        return $this->find("select * from $table where id = $lastId");
     }
 
     /**
@@ -257,31 +262,24 @@ class Landadb extends \PDO
             $param = ' where ' . $where;
         }
 
-        try {
-            $sql = "UPDATE " . $table . " SET " . implode(', ', $set) . " $param ";
-            $this->run($sql, $bind);
+        $sql = "UPDATE " . $table . " SET " . implode(', ', $set) . " $param ";
+        $this->run($sql, $bind);
 
-            if (isset($data['id'])) {
-                $r = $this->find("select * from $table where id = '" . $data['id'] . "'");
-            } else {
-                if (is_array($where)) {
-                    $this->select("*")
-                        ->from($table);
+        if (isset($data['id'])) {
+            return $this->find("select * from $table where id = '" . $data['id'] . "'");
+        } else {
+            if (is_array($where)) {
+                $this->select("*")
+                    ->from($table);
 
-                    foreach ($where as $k => $vals) {
-                        $this->andWhere($k, '=', $vals);
-                    }
-                    $r = $this->find();
-                } else {
-                    $r = $this->find("select * from $table $param");
+                foreach ($where as $k => $vals) {
+                    $this->andWhere($k, '=', $vals);
                 }
+                return $this->find();
+            } else {
+                return $this->find("select * from $table $param");
             }
-
-        } catch (Exception $e) {
-            $r = $e->getMessage();
         }
-
-        return $r;
     }
 
     /**
@@ -310,13 +308,7 @@ class Landadb extends \PDO
 
         $sql = "DELETE FROM " . $table . " $param ";
 
-        try {
-            $r = $this->run($sql, $bind);
-        } catch (Exception $e) {
-            $r = $e->getMessage();
-        }
-
-        return $r;
+        return $this->run($sql, $bind);
     }
 
     /**
@@ -552,13 +544,9 @@ class Landadb extends \PDO
             $sql .= ' WHERE ' . $this->where_clause;
         }
 
-        try {
-            $exec  = $this->run(trim($sql), $this->bind_param);
-            $count = $exec->fetch($this::FETCH_OBJ);
-            return isset($count->jumlah) ? $count->jumlah : 0;
-        } catch (Exception $e) {
-            $e->getMessage();
-        }
+        $exec  = $this->run(trim($sql), $this->bind_param);
+        $count = $exec->fetch($this::FETCH_OBJ);
+        return isset($count->jumlah) ? $count->jumlah : 0;
     }
 
     /**
@@ -623,12 +611,8 @@ class Landadb extends \PDO
             $query['bind']  = array();
         }
 
-        try {
-            $exec = $this->run(trim($query['query']), $query['bind']);
-            return $exec->fetch($this::FETCH_OBJ);
-        } catch (Exception $e) {
-            $e->getMessage();
-        }
+        $exec = $this->run(trim($query['query']), $query['bind']);
+        return $exec->fetch($this::FETCH_OBJ);
     }
 
     /**
@@ -645,12 +629,8 @@ class Landadb extends \PDO
             $query['bind']  = array();
         }
 
-        try {
-            $exec = $this->run(trim($query['query']), $query['bind']);
-            return $exec->fetchAll($this::FETCH_OBJ);
-        } catch (Exception $e) {
-            $e->getMessage();
-        }
+        $exec = $this->run(trim($query['query']), $query['bind']);
+        return $exec->fetchAll($this::FETCH_OBJ);
     }
 
     /**
@@ -689,6 +669,7 @@ class Landadb extends \PDO
                 }
             }
         }
+
         return $sql_string;
     }
 
