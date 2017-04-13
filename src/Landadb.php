@@ -81,7 +81,13 @@ class Landadb extends \PDO
             $arr = array();
         }
 
-        @parent::__construct("mysql:host=" . $this->db_setting['DB_HOST'] . ";dbname=" . $this->db_setting['DB_NAME'], $this->db_setting['DB_USER'], $this->db_setting['DB_PASS'], $arr);
+        if (isset($this->db_setting['DB_DRIVER']) && !empty($this->db_setting['DB_DRIVER'])) {
+            $driver = $this->db_setting['DB_DRIVER'];
+        } else {
+            $driver = "mysql";
+        }
+
+        @parent::__construct($driver . ":host=" . $this->db_setting['DB_HOST'] . ";dbname=" . $this->db_setting['DB_NAME'], $this->db_setting['DB_USER'], $this->db_setting['DB_PASS'], $arr);
     }
 
     /**
