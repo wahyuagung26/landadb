@@ -8,7 +8,7 @@ Install with [Composer](http://getcomposer.org/)
 
 Add `cahkampung/landa-db` to require in composer.json
 
-`"require": { "cahkampung/landa-db": "^1.1" },`
+`"require": { "cahkampung/landa-db": "^1.2" },`
 
 Run `composer install`
 
@@ -18,6 +18,7 @@ Run `composer install`
 
 ```
 $config = [
+  'DB_DRIVER'      => 'mysql',
   'DB_HOST'        => 'localhost',
   'DB_USER'        => 'root',
   'DB_PASS'        => 'password',
