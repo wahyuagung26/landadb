@@ -5,7 +5,7 @@ namespace Cahkampung;
  * Mysql PDO Library
  * author : Wahyu Agung Tribawono
  * email : wahyuagun26@gmail.com
- * versi : 1.1
+ * versi : 1.2
  */
 
 class Landadb extends \PDO
@@ -203,6 +203,15 @@ class Landadb extends \PDO
     }
 
     /**
+     * get primary key
+     */
+    public function getPrimary($table)
+    {
+        $field = $this->find("SHOW KEYS FROM $table WHERE Key_name = 'PRIMARY'");
+        return (isset($field->Column_name)) ? $field->Column_name : '';
+    }
+
+    /**
      * insert into database
      * @param  string $table
      * @param  array $data
@@ -224,7 +233,10 @@ class Landadb extends \PDO
 
         $this->run($sql, $bind);
         $lastId = $this->lastInsertId();
-        return $this->find("select * from $table where id = $lastId");
+
+        $pk = $this->getPrimary($table);
+
+        return $this->find("select * from $table where $pk = $lastId");
     }
 
     /**
@@ -271,8 +283,10 @@ class Landadb extends \PDO
         $sql = "UPDATE " . $table . " SET " . implode(', ', $set) . " $param ";
         $this->run($sql, $bind);
 
+        $pk = $this->getPrimary($table);
+
         if (isset($data['id'])) {
-            return $this->find("select * from $table where id = '" . $data['id'] . "'");
+            return $this->find("select * from $table where $pk = '" . $data['id'] . "'");
         } else {
             if (is_array($where)) {
                 $this->select("*")
