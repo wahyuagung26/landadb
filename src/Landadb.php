@@ -173,6 +173,24 @@ class Landadb extends \PDO
 
     }
 
+     /**
+     * get_field
+     * @param  string $table
+     * @param  array $data
+     * @return array
+     */
+    public function get_field($table)
+    {
+        $stmt         = $this->query("DESCRIBE $table");
+        $list         = $stmt->fetchAll($this::FETCH_OBJ);
+        $table_fields = array();
+        foreach ($list as $val) {
+            $table_fields[] = $val->Field;
+        }
+
+        return $table_fields;
+    }
+
     /**
      * field_filter
      * @param  string $table
