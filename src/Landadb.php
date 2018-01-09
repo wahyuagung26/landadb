@@ -173,7 +173,7 @@ class Landadb extends \PDO
 
     }
 
-     /**
+    /**
      * get_field
      * @param  string $table
      * @param  array $data
@@ -481,7 +481,8 @@ class Landadb extends \PDO
 
         $where = $this->where_clause;
 
-        $i = count($this->bind_param) + 1;
+        $jml = is_array($this->bind_param) ? count($this->bind_param) : 0;
+        $i   = $jml + 1;
 
         if (empty($this->where_clause)) {
             $where = trim($column) . " $filter :where_" . $this->clean($column) . $i;
