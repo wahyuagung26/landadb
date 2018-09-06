@@ -3,6 +3,7 @@
     "description": "Mysql POD library",
     "keywords": ["pdo", "database", "slim", "framework"],
     "license": "AFL-1.1",
+    "minimum-stability": "dev",
     "authors": [{
         "name": "Wahyu Agung Tribawono",
         "email": "wahyuagung26@gmail.com"
