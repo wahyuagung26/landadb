@@ -2,7 +2,7 @@
     "name": "cahkampung/landa-db",
     "description": "Mysql POD library",
     "keywords": ["pdo", "database", "slim", "framework"],
-    "license": "DBAD",
+    "license": "AFL-1.1",
     "authors": [{
         "name": "Wahyu Agung Tribawono",
         "email": "wahyuagung26@gmail.com"
