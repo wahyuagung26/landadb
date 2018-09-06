@@ -230,6 +230,53 @@ class Landadb extends \PDO
     }
 
     /**
+     * Get Ip
+     */
+    public function get_client_ip()
+    {
+        $ipaddress = '';
+        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
+            $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+        } else if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else if (isset($_SERVER['HTTP_X_FORWARDED'])) {
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+        } else if (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
+            $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+        } else if (isset($_SERVER['HTTP_FORWARDED'])) {
+            $ipaddress = $_SERVER['HTTP_FORWARDED'];
+        } else if (isset($_SERVER['REMOTE_ADDR'])) {
+            $ipaddress = $_SERVER['REMOTE_ADDR'];
+        } else {
+            $ipaddress = 'UNKNOWN';
+        }
+
+        return $ipaddress;
+    }
+
+    /**
+     * userLog
+     * @param  [string] $message [description]
+     * @param  [json] $id      [description]
+     */
+    public function userlog($message, $id)
+    {
+        if (isset($this->db_setting['USER_LOG']) && !empty($this->db_setting['USER_LOG']) && $this->db_setting['USER_LOG'] == true) {
+            $logfolder = isset($this->db_setting['LOG_FOLDER']) ? $this->db_setting['LOG_FOLDER'] : 'userlog';
+            $folder    = $logfolder . '/' . date("m-Y");
+            if (!file_exists($folder)) {
+                mkdir($folder, 0777, true);
+            }
+
+            $userId   = isset($this->db_setting['USER_ID']) ? $this->db_setting['USER_ID'] : 0;
+            $userNama = isset($this->db_setting['USER_NAMA']) ? $this->db_setting['USER_NAMA'] : 0;
+            $msg      = date("d-m-Y H:i:s")." (".$this->get_client_ip().") : $userNama (id : $userId) $message $id";
+
+            file_put_contents($folder . '/' . date("d-m-Y") . '.log', $msg . "\n", FILE_APPEND);
+        }
+    }
+
+    /**
      * insert into database
      * @param  string $table
      * @param  array $data
@@ -253,6 +300,11 @@ class Landadb extends \PDO
         $lastId = $this->lastInsertId();
 
         $pk = $this->getPrimary($table);
+
+        /**
+         * Log
+         */
+        $this->userlog("menginput tabel $table", json_encode(['id' => $lastId]));
 
         return $this->find("select * from $table where $pk = $lastId");
     }
@@ -303,6 +355,11 @@ class Landadb extends \PDO
 
         $pk = $this->getPrimary($table);
 
+        /**
+         * Log
+         */
+        $this->userlog("mengupdate tabel $table", json_encode($where));
+
         if (isset($data['id'])) {
             return $this->find("select * from $table where $pk = '" . $data['id'] . "'");
         } else {
@@ -345,6 +402,11 @@ class Landadb extends \PDO
         }
 
         $sql = "DELETE FROM " . $table . " $param ";
+
+        /**
+         * Log
+         */
+        $this->userlog("menghapus tabel $table", json_encode($where));
 
         return $this->run($sql, $bind);
     }
