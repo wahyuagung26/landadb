@@ -53,6 +53,10 @@ class Landadb extends \PDO
      */
     private $grouped;
     /**
+     * @var  $having
+     */
+    private $having;
+    /**
      * Landa DB constructor
      */
     public function __construct($db_setting)
@@ -549,6 +553,16 @@ class Landadb extends \PDO
         return $this;
     }
     /**
+     * having
+     * @param  string $order 
+     * @return array
+     */
+    public function having($order)
+    {
+        $this->having = trim($order);
+        return $this;
+    }
+    /**
      * count
      * @return array
      */
@@ -611,6 +625,9 @@ class Landadb extends \PDO
         }
         if (!is_null($this->offset)) {
             $query .= ' OFFSET ' . $this->offset;
+        }
+        if (!is_null($this->having)) {
+            $query .= ' HAVING ' . $this->having;
         }
         return array('query' => $query, 'bind' => $this->bind_param);
     }
