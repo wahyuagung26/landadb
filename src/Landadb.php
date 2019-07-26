@@ -1,5 +1,6 @@
 <?php
 namespace Cahkampung;
+
 /**
  * Mysql PDO Library
  * author : Wahyu Agung Tribawono
@@ -131,6 +132,7 @@ class Landadb extends \PDO
         $this->groupBy      = null;
         $this->where_clause = null;
         $this->table        = null;
+        $this->having       = null;
     }
     /**
      * run query
@@ -207,15 +209,15 @@ class Landadb extends \PDO
         $ipaddress = '';
         if (isset($_SERVER['HTTP_CLIENT_IP'])) {
             $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
-        } else if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else if (isset($_SERVER['HTTP_X_FORWARDED'])) {
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED'])) {
             $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
-        } else if (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
+        } elseif (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
             $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
-        } else if (isset($_SERVER['HTTP_FORWARDED'])) {
+        } elseif (isset($_SERVER['HTTP_FORWARDED'])) {
             $ipaddress = $_SERVER['HTTP_FORWARDED'];
-        } else if (isset($_SERVER['REMOTE_ADDR'])) {
+        } elseif (isset($_SERVER['REMOTE_ADDR'])) {
             $ipaddress = $_SERVER['REMOTE_ADDR'];
         } else {
             $ipaddress = 'UNKNOWN';
@@ -225,9 +227,9 @@ class Landadb extends \PDO
     /**
      * userLog
      * @param  [string] $message [description]
-     * @param  [json] $id      [description]
+     * @param  [json] $data      [description]
      */
-    public function userlog($message, $id)
+    public function userlog($message, $data)
     {
         if (isset($this->db_setting['USER_LOG']) && !empty($this->db_setting['USER_LOG']) && $this->db_setting['USER_LOG'] == true) {
             $logfolder = isset($this->db_setting['LOG_FOLDER']) ? $this->db_setting['LOG_FOLDER'] : 'userlog';
@@ -237,7 +239,7 @@ class Landadb extends \PDO
             }
             $userId   = isset($this->db_setting['USER_ID']) ? $this->db_setting['USER_ID'] : 0;
             $userNama = isset($this->db_setting['USER_NAMA']) ? $this->db_setting['USER_NAMA'] : 0;
-            $msg      = date("d-m-Y H:i:s") . " (" . $this->get_client_ip() . ") : $userNama (id : $userId) $message $id";
+            $msg      = date("d-m-Y H:i:s") . " (" . $this->get_client_ip() . ") : $userNama (id : $userId) $message."|".$data";
             file_put_contents($folder . '/' . date("d-m-Y") . '.log', $msg . "\n", FILE_APPEND);
         }
     }
@@ -247,7 +249,7 @@ class Landadb extends \PDO
      * @param  array $data
      * @return array
      */
-    public function insert($table, $data)
+    public function insert($table, $data, $autoLog = true, $msg = "menginput tabel $table")
     {
         $bind = [];
         $data = array_merge($this->created(), $data);
@@ -264,7 +266,9 @@ class Landadb extends \PDO
         /**
          * Log
          */
-        $this->userlog("menginput tabel $table", json_encode($data));
+        if ($autoLog) {
+            $this->userlog($msg, json_encode($data));
+        }
         return $data;
     }
     /**
@@ -274,7 +278,7 @@ class Landadb extends \PDO
      * @param  array  $where
      * @return array
      */
-    public function update($table, $data, $where)
+    public function update($table, $data, $where, $autoLog = true, $msg = "mengupdate tabel $table")
     {
         $bind = [];
         $data          = $this->modified() + $data;
@@ -323,7 +327,9 @@ class Landadb extends \PDO
         /**
          * Log
          */
-        $this->userlog("mengupdate tabel $table", json_encode($data));
+        if ($autoLog) {
+            $this->userlog($msg, json_encode($data));
+        }
         return $data;
     }
     /**
@@ -332,7 +338,7 @@ class Landadb extends \PDO
      * @param  array  $where
      * @return array
      */
-    public function delete($table, $where)
+    public function delete($table, $where, $autoLog = true, $msg = "menghapus tabel $table")
     {
         /** Set param */
         if (is_array($where)) {
@@ -352,7 +358,9 @@ class Landadb extends \PDO
         /**
          * Log
          */
-        $this->userlog("menghapus tabel $table", json_encode($where));
+        if ($autoLog) {
+            $this->userlog($msg, json_encode($where));
+        }
         return $this->run($sql, $bind);
     }
     /**
@@ -554,12 +562,12 @@ class Landadb extends \PDO
     }
     /**
      * having
-     * @param  string $order 
+     * @param  string $param
      * @return array
      */
-    public function having($order)
+    public function having($param)
     {
-        $this->having = trim($order);
+        $this->having = trim($param);
         return $this;
     }
     /**
