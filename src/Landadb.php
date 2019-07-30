@@ -239,7 +239,7 @@ class Landadb extends \PDO
             }
             $userId   = isset($this->db_setting['USER_ID']) ? $this->db_setting['USER_ID'] : 0;
             $userNama = isset($this->db_setting['USER_NAMA']) ? $this->db_setting['USER_NAMA'] : 0;
-            $msg      = date("d-m-Y H:i:s") . " (" . $this->get_client_ip() . ") : $userNama (id : $userId) $message."|".$data";
+            $msg      = date("d-m-Y H:i:s") . " (" . $this->get_client_ip() . ") : $userNama (id : $userId) $message | $data";
             file_put_contents($folder . '/' . date("d-m-Y") . '.log', $msg . "\n", FILE_APPEND);
         }
     }
