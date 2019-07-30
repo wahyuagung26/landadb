@@ -249,7 +249,7 @@ class Landadb extends \PDO
      * @param  array $data
      * @return array
      */
-    public function insert($table, $data, $autoLog = true, $msg = "menginput tabel $table")
+    public function insert($table, $data, $autoLog = true, $msg = "")
     {
         $bind = [];
         $data = array_merge($this->created(), $data);
@@ -267,6 +267,9 @@ class Landadb extends \PDO
          * Log
          */
         if ($autoLog) {
+            if(empty($msg)){
+                $msg = "menginput tabel $table";
+            }
             $this->userlog($msg, json_encode($data));
         }
         return $data;
@@ -278,7 +281,7 @@ class Landadb extends \PDO
      * @param  array  $where
      * @return array
      */
-    public function update($table, $data, $where, $autoLog = true, $msg = "mengupdate tabel $table")
+    public function update($table, $data, $where, $autoLog = true, $msg = "")
     {
         $bind = [];
         $data          = $this->modified() + $data;
@@ -328,6 +331,9 @@ class Landadb extends \PDO
          * Log
          */
         if ($autoLog) {
+            if(empty($msg)){
+                $msg = "mengupdate tabel $table";
+            }
             $this->userlog($msg, json_encode($data));
         }
         return $data;
@@ -338,7 +344,7 @@ class Landadb extends \PDO
      * @param  array  $where
      * @return array
      */
-    public function delete($table, $where, $autoLog = true, $msg = "menghapus tabel $table")
+    public function delete($table, $where, $autoLog = true, $msg = "")
     {
         /** Set param */
         if (is_array($where)) {
@@ -359,6 +365,9 @@ class Landadb extends \PDO
          * Log
          */
         if ($autoLog) {
+            if(empty($msg)){
+                $msg = "menghapus tabel $table";
+            }
             $this->userlog($msg, json_encode($where));
         }
         return $this->run($sql, $bind);
