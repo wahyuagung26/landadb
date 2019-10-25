@@ -1,6 +1,5 @@
 <?php
 namespace Cahkampung;
-
 /**
  * Mysql PDO Library
  * author : Wahyu Agung Tribawono
@@ -146,9 +145,14 @@ class Landadb extends \PDO
         try {
             $result = $this->prepare($query);
             $result->execute($bind);
+
             return $result;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
+        } catch(Exception $e){
+            try {
+                $this->rollBack();
+            } catch(Exception $re){
+                echo $re->getMessage();
+            }
         }
     }
     /**
@@ -580,6 +584,27 @@ class Landadb extends \PDO
         return $this;
     }
     /**
+     * begin transactions
+     */
+    public function startTransaction()
+    {
+        return $this->beginTransaction();
+    }
+    /**
+     * end transactions
+     */
+    public function endTransaction()
+    {
+        return $this->commit();
+    }
+    /**
+     * rollback transactions
+     */
+    public function rollBackQuery()
+    {
+        return $this->rollBack();
+    }
+    /**
      * count
      * @return array
      */
@@ -634,6 +659,9 @@ class Landadb extends \PDO
         if (!is_null($this->groupBy)) {
             $query .= ' GROUP BY ' . $this->groupBy;
         }
+        if (!is_null($this->having)) {
+            $query .= ' HAVING ' . $this->having;
+        }
         if (!is_null($this->orderBy)) {
             $query .= ' ORDER BY ' . $this->orderBy;
         }
@@ -642,9 +670,6 @@ class Landadb extends \PDO
         }
         if (!is_null($this->offset)) {
             $query .= ' OFFSET ' . $this->offset;
-        }
-        if (!is_null($this->having)) {
-            $query .= ' HAVING ' . $this->having;
         }
         return array('query' => $query, 'bind' => $this->bind_param);
     }
