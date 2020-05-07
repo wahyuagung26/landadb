@@ -4,7 +4,7 @@ namespace Cahkampung;
  * Mysql PDO Library
  * author : Wahyu Agung Tribawono
  * email : wahyuagun26@gmail.com
- * versi : 1.2
+ * versi : 1.7
  */
 class Landadb extends \PDO
 {
@@ -149,7 +149,7 @@ class Landadb extends \PDO
             return $result;
         } catch(Exception $e){
             try {
-                $this->rollBack();
+                $this->rollBackQuery();
             } catch(Exception $re){
                 echo $re->getMessage();
             }
