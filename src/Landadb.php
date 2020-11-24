@@ -259,7 +259,7 @@ class Landadb extends \PDO
         $data = array_merge($this->created(), $data);
         $data = array_merge($this->modified(), $data);
         $fields = $this->field_filter($table, $data);
-        $sql    = "INSERT INTO " . $table . " (" . implode($fields, ", ") . ") VALUES (:" . implode($fields, ", :") . ");";
+        $sql    = "INSERT INTO " . $table . " (" . implode(", ",$fields) . ") VALUES (:" . implode(", :",$fields) . ");";
         foreach ($fields as $field) {
             $bind[":$field"] = $data[$field];
         }
