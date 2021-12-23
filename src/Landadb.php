@@ -400,7 +400,7 @@ class Landadb extends \PDO
     public function update($table, $data, $where, $autoLog = true, $msg = "")
     {
         $bind          = [];
-        $data          = $this->modified() + $data;
+        $data          = array_merge($data, $this->modified());
         $created       = array_keys($this->created());
         $created_field = isset($created[1]) ? $created[1] : '';
 
